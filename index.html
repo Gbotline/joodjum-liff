@@ -18,10 +18,10 @@
     const LIFF_ID='2012056366-sProyaoP';
     const BACKEND_URL='https://script.google.com/macros/s/AKfycbzpjlvQcl8VPuZy_YYaArChjbcfpXkb_Gday40Nftje9CWtssU721IiRs9q4Ta9CW9p/exec?embed=1';
     const loading=document.getElementById('loading'),frame=document.getElementById('app');
-    function showError(message){loading.innerHTML='<section class="error"><h1>เปิด JOODJUM ไม่สำเร็จ</h1><p>'+String(message).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</p></section>'}
+    function showError(message){loading.innerHTML='<section class="error"><h1>เปิด JOODJUM บนคอมพิวเตอร์</h1><p>'+String(message).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</p><p style="margin-top:12px">กรุณาเปิดผ่านลิงก์ LIFF นี้ แล้วเข้าสู่ระบบด้วย LINE บัญชีเดิม</p><p><a style="display:inline-block;margin-top:12px;padding:10px 14px;border-radius:10px;background:#087f5b;color:#fff;text-decoration:none;font-weight:700" href="https://liff.line.me/2012056366-sProyaoP">เปิด JOODJUM ด้วย LINE</a></p></section>'}
     async function openApp(){
       try{
-        await liff.init({liffId:LIFF_ID});
+        await Promise.race([liff.init({liffId:LIFF_ID}),new Promise((_,reject)=>setTimeout(()=>reject(new Error('การเชื่อมต่อ LINE ใช้เวลานานเกินไป')),7000))]);
         if(!liff.isLoggedIn()){liff.login();return}
         const token=liff.getIDToken();
         if(!token)throw new Error('ไม่พบ LINE ID token กรุณาลองเปิดผ่านแอป LINE อีกครั้ง');
