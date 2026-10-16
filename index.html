@@ -7,7 +7,7 @@
   <title>JOODJUM Finance</title>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    :root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#e9f2ff;background:#071a2d}body{margin:0;min-height:100vh;background:linear-gradient(145deg,#071a2d,#103b52);display:grid;place-items:center}main{text-align:center;padding:32px}.spinner{width:38px;height:38px;border:4px solid #bdebd8;border-top-color:#12b886;border-radius:50%;animation:spin .8s linear infinite;margin:auto}@keyframes spin{to{transform:rotate(360deg)}}h1{margin:20px 0 8px;font-size:25px}p{margin:0;color:#c4d5e6}.error{max-width:330px;background:#fff;color:#102a43;border-radius:18px;padding:24px}.error p{color:#486581;line-height:1.6}iframe{display:none;width:100vw;height:100vh;border:0;background:#f6f8fc}
+    :root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#e9f2ff;background:#071a2d}html,body{height:100dvh;min-height:100dvh;overflow:hidden}body{margin:0;background:linear-gradient(145deg,#071a2d,#103b52);display:grid;place-items:center}main{text-align:center;padding:32px}.spinner{width:38px;height:38px;border:4px solid #bdebd8;border-top-color:#12b886;border-radius:50%;animation:spin .8s linear infinite;margin:auto}@keyframes spin{to{transform:rotate(360deg)}}h1{margin:20px 0 8px;font-size:25px}p{margin:0;color:#c4d5e6}.error{max-width:330px;background:#fff;color:#102a43;border-radius:18px;padding:24px}.error p{color:#486581;line-height:1.6}iframe{display:none;width:100vw;height:100dvh;border:0;background:#f6f8fc}
   </style>
 </head>
 <body>
@@ -16,7 +16,7 @@
   <script>
     // Public IDs/URLs only: no LINE channel secret or access token belongs here.
     const LIFF_ID='2012056366-sProyaoP';
-    const BACKEND_URL='https://script.google.com/macros/s/AKfycbzpjlvQcl8VPuZy_YYaArChjbcfpXkb_Gday40Nftje9CWtssU721IiRs9q4Ta9CW9p/exec?embed=1';
+    const BACKEND_URL='https://script.google.com/macros/s/AKfycbzpjlvQcl8VPuZy_YYaArChjbcfpXkb_Gday40Nftje9CWtssU721IiRs9q4Ta9CW9p/exec?embed=1&release=14';
     const loading=document.getElementById('loading'),frame=document.getElementById('app');
     function showError(message){loading.innerHTML='<section class="error"><h1>เปิด JOODJUM บนคอมพิวเตอร์</h1><p>'+String(message).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</p><p style="margin-top:12px">กรุณาเปิดผ่านลิงก์ LIFF นี้ แล้วเข้าสู่ระบบด้วย LINE บัญชีเดิม</p><p><a style="display:inline-block;margin-top:12px;padding:10px 14px;border-radius:10px;background:#087f5b;color:#fff;text-decoration:none;font-weight:700" href="https://liff.line.me/2012056366-sProyaoP">เปิด JOODJUM ด้วย LINE</a></p></section>'}
     async function openApp(){
