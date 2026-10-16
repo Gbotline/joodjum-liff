@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071a2d">
+  <title>JOODJUM Finance</title>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    :root{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#e9f2ff;background:#071a2d}body{margin:0;min-height:100vh;background:linear-gradient(145deg,#071a2d,#103b52);display:grid;place-items:center}main{text-align:center;padding:32px}.spinner{width:38px;height:38px;border:4px solid #bdebd8;border-top-color:#12b886;border-radius:50%;animation:spin .8s linear infinite;margin:auto}@keyframes spin{to{transform:rotate(360deg)}}h1{margin:20px 0 8px;font-size:25px}p{margin:0;color:#c4d5e6}.error{max-width:330px;background:#fff;color:#102a43;border-radius:18px;padding:24px}.error p{color:#486581;line-height:1.6}iframe{display:none;width:100vw;height:100vh;border:0;background:#f6f8fc}
+  </style>
+</head>
+<body>
+  <main id="loading"><div class="spinner"></div><h1>กำลังเปิด JOODJUM</h1><p>กำลังยืนยันบัญชี LINE ของคุณ</p></main>
+  <iframe id="app" title="JOODJUM Finance" allow="clipboard-read; clipboard-write"></iframe>
+  <script>
+    // Public IDs/URLs only: no LINE channel secret or access token belongs here.
+    const LIFF_ID='2012056366-sProyaoP';
+    const BACKEND_URL='https://script.google.com/macros/s/AKfycbzpjlvQcl8VPuZy_YYaArChjbcfpXkb_Gday40Nftje9CWtssU721IiRs9q4Ta9CW9p/exec?embed=1';
+    const loading=document.getElementById('loading'),frame=document.getElementById('app');
+    function showError(message){loading.innerHTML='<section class="error"><h1>เปิด JOODJUM ไม่สำเร็จ</h1><p>'+String(message).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</p></section>'}
+    async function openApp(){
+      try{
+        await liff.init({liffId:LIFF_ID});
+        if(!liff.isLoggedIn()){liff.login();return}
+        const token=liff.getIDToken();
+        if(!token)throw new Error('ไม่พบ LINE ID token กรุณาลองเปิดผ่านแอป LINE อีกครั้ง');
+        frame.src=BACKEND_URL;
+        window.addEventListener('message',event=>{
+          if(!event.data||event.data.type!=='JOODJUM_BRIDGE_READY')return;
+          // Reply only to the exact child window that requested its token.
+          event.source.postMessage({type:'JOODJUM_LIFF_TOKEN',token:token},event.origin);
+          loading.style.display='none';frame.style.display='block';
+        },{once:true});
+      }catch(error){showError(error&&error.message?error.message:'เกิดข้อผิดพลาดในการเปิด LIFF')}
+    }
+    openApp();
+  </script>
+</body>
+</html>
+
