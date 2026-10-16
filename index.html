@@ -27,7 +27,7 @@
         if(!token)throw new Error('ไม่พบ LINE ID token กรุณาลองเปิดผ่านแอป LINE อีกครั้ง');
         frame.src=BACKEND_URL;
         window.addEventListener('message',event=>{
-          if(!event.data||event.data.type!=='JOODJUM_BRIDGE_READY')return;
+          if(event.source!==frame.contentWindow||!event.data||event.data.type!=='JOODJUM_BRIDGE_READY')return;
           // Reply only to the exact child window that requested its token.
           event.source.postMessage({type:'JOODJUM_LIFF_TOKEN',token:token},event.origin);
           loading.style.display='none';frame.style.display='block';
