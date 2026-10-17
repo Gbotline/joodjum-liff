@@ -16,22 +16,42 @@
   <script>
     // Public IDs/URLs only: no LINE channel secret or access token belongs here.
     const LIFF_ID='2012056366-sProyaoP';
-    const BACKEND_URL='https://script.google.com/macros/s/AKfycbzpjlvQcl8VPuZy_YYaArChjbcfpXkb_Gday40Nftje9CWtssU721IiRs9q4Ta9CW9p/exec?embed=1&release=14';
+    const BACKEND_URL='https://script.google.com/macros/s/AKfycbzpjlvQcl8VPuZy_YYaArChjbcfpXkb_Gday40Nftje9CWtssU721IiRs9q4Ta9CW9p/exec?embed=1&release=17';
     const loading=document.getElementById('loading'),frame=document.getElementById('app');
+    const SESSION_RETRY_KEY='joodjum-session-retry-at';
+    let childWindow=null,childOrigin='';
     function showError(message){loading.innerHTML='<section class="error"><h1>เปิด JOODJUM บนคอมพิวเตอร์</h1><p>'+String(message).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</p><p style="margin-top:12px">กรุณาเปิดผ่านลิงก์ LIFF นี้ แล้วเข้าสู่ระบบด้วย LINE บัญชีเดิม</p><p><a style="display:inline-block;margin-top:12px;padding:10px 14px;border-radius:10px;background:#087f5b;color:#fff;text-decoration:none;font-weight:700" href="https://liff.line.me/2012056366-sProyaoP">เปิด JOODJUM ด้วย LINE</a></p></section>'}
+    function showSessionHelp(message,allowRetry){frame.style.display='none';loading.style.display='';loading.innerHTML='<section class="error"><h1>ต้องเข้าสู่ระบบ LINE อีกครั้ง</h1><p id="sessionMessage"></p>'+(allowRetry?'<p><button id="sessionRetry" style="margin-top:16px;padding:10px 14px;border:0;border-radius:10px;background:#087f5b;color:#fff;font:inherit;font-weight:700;cursor:pointer">เข้าสู่ระบบอีกครั้ง</button></p>':'')+'</section>';document.getElementById('sessionMessage').textContent=message;if(allowRetry)document.getElementById('sessionRetry').onclick=()=>renewSession(true)}
+    function renewSession(manual){
+      if(liff.isInClient()){showSessionHelp('การยืนยัน LINE หมดอายุ กรุณาปิดหน้านี้แล้วเปิด JOODJUM จาก LINE ใหม่',false);return}
+      try{
+        const last=Number(sessionStorage.getItem(SESSION_RETRY_KEY)||0);
+        if(!manual&&Date.now()-last<60000){showSessionHelp('การเข้าสู่ระบบอัตโนมัติไม่สำเร็จ กรุณาลองเข้าสู่ระบบอีกครั้ง และตรวจสอบวันที่และเวลาในเครื่อง',true);return}
+        sessionStorage.setItem(SESSION_RETRY_KEY,String(Date.now()));
+        liff.logout();
+        location.reload();
+      }catch(e){showSessionHelp('ไม่สามารถต่ออายุการเข้าสู่ระบบได้ กรุณาปิดและเปิดเว็บอีกครั้ง',false)}
+    }
     async function openApp(){
       try{
         await Promise.race([liff.init({liffId:LIFF_ID}),new Promise((_,reject)=>setTimeout(()=>reject(new Error('การเชื่อมต่อ LINE ใช้เวลานานเกินไป')),7000))]);
         if(!liff.isLoggedIn()){liff.login();return}
         const token=liff.getIDToken();
         if(!token)throw new Error('ไม่พบ LINE ID token กรุณาลองเปิดผ่านแอป LINE อีกครั้ง');
+        // Expiry here is only a convenience check; the server still verifies every token with LINE.
+        const decoded=liff.getDecodedIDToken();
+        if(decoded&&Number.isFinite(Number(decoded.exp))&&Number(decoded.exp)*1000<=Date.now()+30000){renewSession(false);return}
         frame.src=BACKEND_URL;
         window.addEventListener('message',event=>{
-          if(!event.data||event.data.type!=='JOODJUM_BRIDGE_READY'||!new URL(event.origin).hostname.endsWith('.googleusercontent.com'))return;
-          // Reply only to the exact child window that requested its token.
-          event.source.postMessage({type:'JOODJUM_LIFF_TOKEN',token:token},event.origin);
+          if(!event.data)return;
+          if(event.data.type==='JOODJUM_SESSION_EXPIRED'&&event.source===childWindow&&event.origin===childOrigin){renewSession(false);return}
+          if(event.data.type!=='JOODJUM_BRIDGE_READY'||childWindow)return;
+          let host;try{host=new URL(event.origin).hostname}catch(e){return}
+          if(!host.endsWith('.googleusercontent.com'))return;
+          childWindow=event.source;childOrigin=event.origin;
+          childWindow.postMessage({type:'JOODJUM_LIFF_TOKEN',token:token},childOrigin);
           loading.style.display='none';frame.style.display='block';
-        },{once:true});
+        });
       }catch(error){showError(error&&error.message?error.message:'เกิดข้อผิดพลาดในการเปิด LIFF')}
     }
     openApp();
